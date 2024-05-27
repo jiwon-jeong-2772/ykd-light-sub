@@ -38,7 +38,7 @@
       async function refreshHistory() {
         let { data: record, error } = await client.from("page").select("*");
         console.log('record', record);
-        let tag = ""
+        document.querySelector("#content").innerHTML = "";
         for (let i = 0; i < record.length; i++) {
           let tr = document.createElement('tr');
 
