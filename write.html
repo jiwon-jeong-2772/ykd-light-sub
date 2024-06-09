@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./css/timeline.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">YKD light</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" href="home.html">Home🏠</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="write.html">작성✏️</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="timeline.html">감사기도📝</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
+          </li>
+        </ul>
+        <button class="btn btn-outline-success" id="logout" type="submit">Logout</button>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="row g-3 mt-4">
+      <div class="col-md-4">
+        <label for="category" class="form-label">카테고리</label>
+        <select id="category" class="form-select">
+          <option selected>감사기도</option>
+        </select>
+      </div>
+      <div class="col-12 mb-3">
+        <label for="content" class="form-label">내용</label>
+        <textarea class="form-control" id="content" rows="10"></textarea>
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="private">
+          <label class="form-check-label" for="private">
+            비공개
+          </label>
+        </div>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary" id="create">제출</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const supabaseUrl = "https://xyhsopvwaqkpovwrjuwo.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5aHNvcHZ3YXFrcG92d3JqdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4MDA0MTgsImV4cCI6MjAzMjM3NjQxOH0.EujPowKW1Ux0pqfbavxo7iboWVcsstQU4VIpp9geixw";
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
+    let session = null;
+
+    async function checkLogin() {
+      const authInfo = await client.auth.getSession();
+      session = authInfo.data.session;
+      if (session === null) {
+        location.href = "login.html";
+      }
+    }
+
+    async function signOut() {
+      const { error } = await client.auth.signOut();
+      location.href = "login.html";
+    }
+
+    async function createPost() {
+      let content = document.getElementById("content").value;
+      let isPrivate = document.getElementById("private").checked;
+      const { error } = await client.from("thanks").insert([{ body: content, is_private: isPrivate }]);
+      if (error !== null) {
+      }
+      location.href = "timeline.html";
+    }
+
+    document.querySelector("#logout").addEventListener("click", signOut);
+    document.querySelector("#create").addEventListener("click", createPost);
+    checkLogin();
+  </script>
+
+</body>
+
+</html>
