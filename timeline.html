@@ -53,7 +53,7 @@
             <div class="g-mb-15">
               <div class="row">
                 <span class="g-color-gray-dark-v4 g-font-size-12 col-md-11 col-sm-11 col-10 author"></span>
-                <button type="button" class="btn-close col-md-1 col-sm-1 col-1 invisible" onClick="deletePost(this.id)"
+                <button type="button" class="btn-close col-md-1 col-sm-1 col-1" onClick="deletePost(this.id)"
                   aria-label="Delete"></button>
               </div>
               <span class="g-color-gray-dark-v4 g-font-size-12 interval"></span>
@@ -133,6 +133,7 @@
       document.getElementById("list").innerHTML = "";
       for (let i = 0; i < record.length; i++) {
         let post = document.getElementById("post-template").cloneNode(true);
+        post.removeAttribute('id');
         // body
         post.querySelector("p.body").innerHTML = record[i].body;
         // time interval
@@ -146,8 +147,9 @@
         post.querySelector("span.author").innerHTML = author;
         // delete
         if (record[i].user_id === session.user.id) {
-          post.querySelector(".btn-close").classList.remove("invisible");
           post.querySelector(".btn-close").setAttribute("id", record[i].id);
+        } else {
+          post.querySelector(".btn-close").classList.add("invisible");
         }
         document.getElementById("list").appendChild(post);
       }
