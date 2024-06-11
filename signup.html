@@ -24,11 +24,11 @@
         <div class="col-12 col-md-8 col-lg-6 col-xl-5">
           <div class="card bg-dark" style="border-radius: 1rem;">
             <div class="card-body p-5">
-
+              <div class="alert alert-danger visually-hidden" id="alert" role="alert">
+              </div>
               <div class="mb-md-5 mt-md-4 pb-1">
-
                 <h2 class="fw-bold mb-2 text-uppercase text-center text-white">SIGN UP</h2>
-                <p class="text-white-50 mb-5">가입은 이메일 기반으로 진행되며 메일을 통한 인증 절차가 있으니 실제 사용하는 이메일 주소를 사용하여 가입을 진행해주세요!
+                <p class="text-white-50 mb-5">
                 </p>
 
                 <div class="form-floating form-white mb-4">
@@ -42,13 +42,18 @@
                 </div>
 
                 <div class="form-floating form-white mb-4">
+                  <input type="password" id="password-check" placeholder="" class="form-control form-control-lg" />
+                  <label class="form-label" for="password-check">Password 확인</label>
+                </div>
+
+                <div class="form-floating form-white mb-4">
                   <input type="text" id="name" placeholder="" class="form-control form-control-lg" />
                   <label class="form-label" for="name">이름</label>
                 </div>
 
                 <div class="form-floating form-white mb-4">
                   <input type="text" id="inception" placeholder="" class="form-control form-control-lg" />
-                  <label class="form-label" for="inception">기수</label>
+                  <label class="form-label" for="inception">기수 (2자리 숫자로 입력)</label>
                 </div>
 
                 <div class="form-floating form-white mb-4">
@@ -71,29 +76,82 @@
       </div>
     </div>
   </section>
-
   <script>
     const supabaseUrl = "https://xyhsopvwaqkpovwrjuwo.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5aHNvcHZ3YXFrcG92d3JqdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4MDA0MTgsImV4cCI6MjAzMjM3NjQxOH0.EujPowKW1Ux0pqfbavxo7iboWVcsstQU4VIpp9geixw";
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     async function signUpNewUser() {
       let email = document.getElementById("email").value;
       let password = document.getElementById("password").value;
+      let passwordCheck = document.getElementById("password-check").value;
       let name = document.getElementById("name").value;
       let inception = document.getElementById("inception").value;
       let leader = document.getElementById("leader").value;
+      let { isValid, message } = validate(email, password, passwordCheck, name, inception, leader);
+      if (!isValid) {
+        alertMessage(message);
+        return;
+      }
       const { data, error } = await client.auth.signUp({
         email: email,
         password: password,
       });
       if (error !== null) {
+        let message = "처리 과정에서 문제가 발생하였습니다.";
+        alertMessage(message);
       }
       let userId = data.user.id;
       const { userinfoError } = await client.from('userinfo').insert({ user_id: userId, name: name, inception: inception, leader: leader });
       if (userinfoError !== null) {
+        let message = "처리 과정에서 문제가 발생하였습니다.";
+        alertMessage(message);
       }
       location.href = "login.html";
+    }
+
+    function alertMessage(message) {
+      let alert = document.getElementById("alert");
+      alert.innerHTML = message;
+      alert.classList.remove("visually-hidden");
+    }
+
+    function validate(email, password, passwordCheck, name, inception, leader) {
+      let result = { isValid: true, message: "" };
+      // email
+      if (!emailRegex.test(email)) {
+        result.isValid = false;
+        result.message = "올바른 이메일 형식이 아닙니다.";
+        return result;
+      }
+      // password
+      if (password !== passwordCheck) {
+        result.isValid = false;
+        result.message = "비밀번호 확인에 입력한 비밀번호와 비밀번호가 일치하지 않습니다.";
+        return result;
+      }
+      // name
+      if (name.length < 2 || name.length > 5) {
+        result.isValid = false;
+        result.message = "올바른 이름을 입력해주세요.";
+        return result;
+      }
+      // inception
+      let inceptionInt = parseInt(inception);
+      if (Number.isNaN(inceptionInt) || inceptionInt < 0 || inceptionInt > 20) {
+        result.isValid = false;
+        result.message = "올바른 기수를 입력해주세요.";
+        return result;
+      }
+      // leader
+      if (leader.length < 2 || leader.length > 5) {
+        result.isValid = false;
+        result.message = "소속 셀의 리더 이름을 올바르게 입력해주세요.";
+        return result;
+      }
+      return result;
     }
 
     document.querySelector("#signup").addEventListener("click", signUpNewUser);

@@ -20,7 +20,7 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">YKD light</a>
+      <a class="navbar-brand" href="home.html">YKD light</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -31,7 +31,7 @@
             <a class="nav-link active" href="home.html">Home🏠</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" href="write.html">작성✏️</a>
+            <a class="nav-link active" href="write.html">글쓰기✏️</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="timeline.html">감사기도📝</a>
@@ -45,29 +45,39 @@
     </div>
   </nav>
   <div class="container">
-    <div class="row g-3 mt-4">
+    <div class="row mt-4">
+      <div class="alert alert-danger visually-hidden" id="alert" role="alert"></div>
       <div class="col-md-4">
         <label for="category" class="form-label">카테고리</label>
         <select id="category" class="form-select">
           <option selected>감사기도</option>
         </select>
       </div>
+    </div>
+    <div class="row mt-4">
       <div class="col-12 mb-3">
         <label for="content" class="form-label">내용</label>
-        <textarea class="form-control" id="content" rows="10"></textarea>
+        <textarea class="form-control" id="content" rows="5"></textarea>
       </div>
-      <div class="col-12">
+    </div>
+    <div class="row mt-3">
+      <div class="col-9"></div>
+      <div class="col-3">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="private">
           <label class="form-check-label" for="private">
             비공개
           </label>
+          <input class="form-check-input form-check-input-reverse" type="checkbox" id="private">
         </div>
       </div>
-      <div class="col-12">
+    </div>
+    <div class="row mt-3">
+      <div class="col-9"></div>
+      <div class="col-3 text-end">
         <button type="submit" class="btn btn-primary" id="create">제출</button>
       </div>
     </div>
+  </div>
   </div>
   <script>
     const supabaseUrl = "https://xyhsopvwaqkpovwrjuwo.supabase.co";
@@ -91,10 +101,38 @@
     async function createPost() {
       let content = document.getElementById("content").value;
       let isPrivate = document.getElementById("private").checked;
+      let { isValid, message } = validate(content);
+      if (!isValid) {
+        alertMessage(message);
+        return;
+      }
       const { error } = await client.from("thanks").insert([{ body: content, is_private: isPrivate }]);
       if (error !== null) {
+        let message = "처리 과정에서 문제가 발생하였습니다.";
+        alertMessage(message);
       }
       location.href = "timeline.html";
+    }
+
+    function validate(content) {
+      let result = { isValid: true, message: "" };
+      if (content.length == 0) {
+        result.isValid = false;
+        result.message = "작성된 내용이 없습니다.";
+        return result;
+      }
+      if (content.length > 500) {
+        result.isValid = false;
+        result.message = "입력 가능한 글자수는 최대 500자 입니다.";
+        return result;
+      }
+      return result;
+    }
+
+    function alertMessage(message) {
+      let alert = document.getElementById("alert");
+      alert.innerHTML = message;
+      alert.classList.remove("visually-hidden");
     }
 
     document.querySelector("#logout").addEventListener("click", signOut);

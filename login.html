@@ -24,9 +24,9 @@
         <div class="col-12 col-md-8 col-lg-6 col-xl-5">
           <div class="card bg-dark" style="border-radius: 1rem;">
             <div class="card-body p-5">
-
+              <div class="alert alert-danger visually-hidden" id="alert" role="alert">
+              </div>
               <div class="mb-md-5 mt-md-4 pb-1">
-
                 <h2 class="fw-bold mb-2 text-uppercase text-warning text-center">YKD Light</h2>
                 <p class="text-white-50 mb-5">나는 나를 사랑하는 자들을 사랑하며 나를 찾는 자들이 나를 발견할 것이다 [잠언 8:17]</p>
 
@@ -76,6 +76,16 @@
         email: email,
         password: password,
       });
+      if (error !== null) {
+        let message = "처리 과정에서 문제가 발생하였습니다.";
+        if (error.name === "AuthApiError") {
+          message = "가입되지 않은 아이디이거나 잘못된 패스워드를 입력하셨습니다."
+        }
+        let alert = document.getElementById("alert");
+        alert.innerHTML = message;
+        alert.classList.remove("visually-hidden");
+        return;
+      }
       checkLogin();
     }
 
