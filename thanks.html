@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./css/timeline.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="home.html">YKD light</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" href="home.html">Home🏠</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="write.html">글쓰기✏️</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="thanks.html">감사기도📝</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="intercession.html">중보기도🙏</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
+          </li>
+        </ul>
+        <button class="btn btn-outline-success" id="logout" type="submit">Logout</button>
+      </div>
+    </div>
+  </nav>
+  <div class="alert alert-success" role="alert">감사기도</div>
+  <div class="alert alert-danger visually-hidden" id="alert" role="alert"></div>
+  <div class="form-check form-switch ms-3">
+    <input class="form-check-input" type="checkbox" id="personal">
+    <label class="form-check-label" for="personal">내가 작성한 글만 보기</label>
+  </div>
+  <div class="container" id="list"></div>
+  <div class="container invisible">
+    <div class="row justify-content-center align-items-center" id="post-template">
+      <div class="col-md-10 col-sm-10 col-11">
+        <div class="media g-mb-30 media-comment">
+          <div class="media-body u-shadow-v18 g-bg-secondary g-pa-30">
+            <div class="g-mb-15">
+              <div class="row">
+                <span class="g-color-gray-dark-v4 g-font-size-12 col-md-11 col-sm-11 col-10 author"></span>
+                <button type="button" class="btn-close col-md-1 col-sm-1 col-1" onClick="deletePost(this.id)"
+                  aria-label="Delete"></button>
+              </div>
+              <span class="g-color-gray-dark-v4 g-font-size-12 interval"></span>
+            </div>
+
+            <p class="body pt-2" style='white-space:pre-wrap'></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const supabaseUrl = "https://xyhsopvwaqkpovwrjuwo.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5aHNvcHZ3YXFrcG92d3JqdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4MDA0MTgsImV4cCI6MjAzMjM3NjQxOH0.EujPowKW1Ux0pqfbavxo7iboWVcsstQU4VIpp9geixw";
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
+    let session = null;
+
+    function timeDifference(current, previous) {
+      let msPerMinute = 60 * 1000;
+      let msPerHour = msPerMinute * 60;
+      let msPerDay = msPerHour * 24;
+      let msPerMonth = msPerDay * 30;
+      let msPerYear = msPerDay * 365;
+
+      let elapsed = current - previous;
+
+      if (elapsed < msPerMinute) {
+        return Math.round(elapsed / 1000) + ' seconds ago';
+      }
+
+      else if (elapsed < msPerHour) {
+        return Math.round(elapsed / msPerMinute) + ' minutes ago';
+      }
+
+      else if (elapsed < msPerDay) {
+        return Math.round(elapsed / msPerHour) + ' hours ago';
+      }
+
+      else if (elapsed < msPerMonth) {
+        return Math.round(elapsed / msPerDay) + ' days ago';
+      }
+
+      else if (elapsed < msPerYear) {
+        return Math.round(elapsed / msPerMonth) + ' months ago';
+      }
+
+      else {
+        return Math.round(elapsed / msPerYear) + ' years ago';
+      }
+    }
+
+    async function checkLogin() {
+      const authInfo = await client.auth.getSession();
+      session = authInfo.data.session;
+      console.log(session);
+      if (session === null) {
+        location.href = "login.html";
+      }
+    }
+
+    async function signOut() {
+      const { error } = await client.auth.signOut();
+      location.href = "login.html";
+    }
+
+    async function refresh() {
+      let isPersonal = document.getElementById("personal").checked;
+      let record = null;
+      if (isPersonal) {
+        const { data, error } = await client.from('thanks').select(
+          `
+        *,
+        userinfo:user_id (name, leader, inception)
+        `
+        ).eq('user_id', session.user.id).order('id', { ascending: false }).limit(100);
+        if (error !== null) {
+          let message = "처리 과정에서 문제가 발생하였습니다.";
+          alertMessage(message);
+          return;
+        }
+        record = data;
+      } else {
+        const { data, error } = await client.from('thanks').select(
+          `
+        *,
+        userinfo:user_id (name, leader, inception)
+        `
+        ).eq('is_private', false).order('id', { ascending: false }).limit(100);
+        if (error !== null) {
+          let message = "처리 과정에서 문제가 발생하였습니다.";
+          alertMessage(message);
+          return;
+        }
+        record = data;
+      }
+      document.getElementById("list").innerHTML = "";
+      for (let i = 0; i < record.length; i++) {
+        let post = document.getElementById("post-template").cloneNode(true);
+        post.removeAttribute('id');
+        // body
+        post.querySelector("p.body").innerHTML = record[i].body;
+        // time interval
+        let createdTime = new Date(record[i].created_at).getTime();
+        let currentTime = Date.now();
+        let timeInterval = timeDifference(currentTime, createdTime);
+        if (record[i].is_private) {
+          timeInterval += "  (비공개)";
+        }
+        post.querySelector("span.interval").innerHTML = timeInterval;
+        // author
+        let author = record[i].userinfo.inception + "기 " + record[i].userinfo.name
+          + " (" + record[i].userinfo.leader + "셀)";
+        post.querySelector("span.author").innerHTML = author;
+        // delete
+        if (record[i].user_id === session.user.id) {
+          post.querySelector(".btn-close").setAttribute("id", record[i].id);
+        } else {
+          post.querySelector(".btn-close").classList.add("invisible");
+        }
+        document.getElementById("list").appendChild(post);
+      }
+    }
+
+    async function deletePost(id) {
+      const { data, error } = await client.from("thanks").delete().eq("id", id);
+      refresh();
+    }
+
+    function alertMessage(message) {
+      let alert = document.getElementById("alert");
+      alert.innerHTML = message;
+      alert.classList.remove("visually-hidden");
+    }
+
+    document.querySelector("#logout").addEventListener("click", signOut);
+    document.querySelector("#personal").addEventListener("click", refresh);
+    checkLogin();
+    refresh();
+  </script>
+
+</body>
+
+</html>

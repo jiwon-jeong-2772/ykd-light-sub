@@ -34,7 +34,10 @@
             <a class="nav-link active" href="write.html">글쓰기✏️</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="timeline.html">감사기도📝</a>
+            <a class="nav-link active" aria-current="page" href="thanks.html">감사기도📝</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="intercession.html">중보기도🙏</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
@@ -44,6 +47,12 @@
       </div>
     </div>
   </nav>
+  <div class="alert alert-primary" role="alert">중보기도</div>
+  <div class="alert alert-danger visually-hidden" id="alert" role="alert"></div>
+  <div class="form-check form-switch ms-3">
+    <input class="form-check-input" type="checkbox" id="personal">
+    <label class="form-check-label" for="personal">내가 작성한 글만 보기</label>
+  </div>
   <div class="container" id="list"></div>
   <div class="container invisible">
     <div class="row justify-content-center align-items-center" id="post-template">
@@ -120,15 +129,34 @@
     }
 
     async function refresh() {
-      const { data: record, error } = await client.from('thanks').select(
-        `
+      let isPersonal = document.getElementById("personal").checked;
+      let record = null;
+      if (isPersonal) {
+        const { data, error } = await client.from('intercession').select(
+          `
         *,
         userinfo:user_id (name, leader, inception)
         `
-      ).eq('is_private', false).order('id', { ascending: false }).limit(100);
-      if (error !== null) {
-        document.getElementById("list").innerHTML = JSON.stringify(error);
-        return;
+        ).eq('user_id', session.user.id).order('id', { ascending: false }).limit(100);
+        if (error !== null) {
+          let message = "처리 과정에서 문제가 발생하였습니다.";
+          alertMessage(message);
+          return;
+        }
+        record = data;
+      } else {
+        const { data, error } = await client.from('intercession').select(
+          `
+        *,
+        userinfo:user_id (name, leader, inception)
+        `
+        ).eq('is_private', false).order('id', { ascending: false }).limit(100);
+        if (error !== null) {
+          let message = "처리 과정에서 문제가 발생하였습니다.";
+          alertMessage(message);
+          return;
+        }
+        record = data;
       }
       document.getElementById("list").innerHTML = "";
       for (let i = 0; i < record.length; i++) {
@@ -140,6 +168,9 @@
         let createdTime = new Date(record[i].created_at).getTime();
         let currentTime = Date.now();
         let timeInterval = timeDifference(currentTime, createdTime);
+        if (record[i].is_private) {
+          timeInterval += "  (비공개)";
+        }
         post.querySelector("span.interval").innerHTML = timeInterval;
         // author
         let author = record[i].userinfo.inception + "기 " + record[i].userinfo.name
@@ -156,11 +187,18 @@
     }
 
     async function deletePost(id) {
-      const { data, error } = await client.from("thanks").delete().eq("id", id);
+      const { data, error } = await client.from("intercession").delete().eq("id", id);
       refresh();
     }
 
+    function alertMessage(message) {
+      let alert = document.getElementById("alert");
+      alert.innerHTML = message;
+      alert.classList.remove("visually-hidden");
+    }
+
     document.querySelector("#logout").addEventListener("click", signOut);
+    document.querySelector("#personal").addEventListener("click", refresh);
     checkLogin();
     refresh();
   </script>

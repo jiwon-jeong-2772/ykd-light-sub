@@ -34,7 +34,10 @@
             <a class="nav-link active" href="write.html">글쓰기✏️</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="timeline.html">감사기도📝</a>
+            <a class="nav-link active" aria-current="page" href="thanks.html">감사기도📝</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="intercession.html">중보기도🙏</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
@@ -51,6 +54,7 @@
         <label for="category" class="form-label">카테고리</label>
         <select id="category" class="form-select">
           <option selected>감사기도</option>
+          <option>중보기도</option>
         </select>
       </div>
     </div>
@@ -99,6 +103,7 @@
     }
 
     async function createPost() {
+      let category = document.getElementById("category").value;
       let content = document.getElementById("content").value;
       let isPrivate = document.getElementById("private").checked;
       let { isValid, message } = validate(content);
@@ -106,12 +111,16 @@
         alertMessage(message);
         return;
       }
-      const { error } = await client.from("thanks").insert([{ body: content, is_private: isPrivate }]);
+      let tableName = "thanks";
+      if (category.includes("중보기도")) {
+        tableName = "intercession";
+      }
+      const { error } = await client.from(tableName).insert([{ body: content, is_private: isPrivate }]);
       if (error !== null) {
         let message = "처리 과정에서 문제가 발생하였습니다.";
         alertMessage(message);
       }
-      location.href = "timeline.html";
+      location.href = tableName + ".html";
     }
 
     function validate(content) {

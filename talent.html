@@ -34,7 +34,10 @@
             <a class="nav-link active" href="write.html">글쓰기✏️</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="timeline.html">감사기도📝</a>
+            <a class="nav-link active" aria-current="page" href="thanks.html">감사기도📝</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="intercession.html">중보기도🙏</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
@@ -68,8 +71,11 @@
     }
 
     async function refresh() {
-      const { count, error } = await client.from('thanks').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
-      document.querySelector("#talent").innerHTML = count;
+      const { count: thanksCount, thanksError } = await client.from('thanks').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
+      const { count: intercessionCount, intercessionError } = await client.from('intercession').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
+
+      let talentTotal = thanksCount + intercessionCount;
+      document.querySelector("#talent").innerHTML = talentTotal;
     }
 
     document.querySelector("#logout").addEventListener("click", signOut);
