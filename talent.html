@@ -47,8 +47,17 @@
       </div>
     </div>
   </nav>
-  <div class="text-center pt-4">
-    <h3>내 달란트: <span class="badge bg-warning" id="talent"></span></h3>
+  <div class="container">
+    <div class="row">
+      <div class="col-3"></div>
+      <div class="col-6 text-center pt-4">
+        <h3>🌟 내 달란트: <span class="badge bg-warning" id="talent"></span></h3>
+        <p class="m-3"> - 감사기도: <span class="badge bg-secondary" id="thanks-count"></span></p>
+        <p class="m-3"> - 중보기도: <span class="badge bg-secondary" id="intercession-count"></span>
+        </p>
+      </div>
+      <div class="col-3"></div>
+    </div>
   </div>
   <script>
     const supabaseUrl = "https://xyhsopvwaqkpovwrjuwo.supabase.co";
@@ -76,6 +85,8 @@
 
       let talentTotal = thanksCount + intercessionCount;
       document.querySelector("#talent").innerHTML = talentTotal;
+      document.querySelector("#thanks-count").innerHTML = thanksCount;
+      document.querySelector("#intercession-count").innerHTML = intercessionCount;
     }
 
     document.querySelector("#logout").addEventListener("click", signOut);
