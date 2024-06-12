@@ -49,6 +49,7 @@
   </nav>
   <div class="container">
     <div class="alert alert-danger visually-hidden" id="alert" role="alert"></div>
+    <div class="alert alert-success visually-hidden" id="success" role="alert">인증에 성공하였습니다!</div>
     <div class="row">
       <div class="col-3"></div>
       <div class="col-6 text-center pt-4">
@@ -66,6 +67,7 @@
     const supabaseUrl = "https://xyhsopvwaqkpovwrjuwo.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5aHNvcHZ3YXFrcG92d3JqdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4MDA0MTgsImV4cCI6MjAzMjM3NjQxOH0.EujPowKW1Ux0pqfbavxo7iboWVcsstQU4VIpp9geixw";
     const client = supabase.createClient(supabaseUrl, supabaseKey);
+    const searchParams = new URLSearchParams(window.location.search);
     let session = null;
 
     async function checkLogin() {
@@ -78,7 +80,6 @@
     }
 
     async function checkEvent() {
-      let searchParams = new URLSearchParams(window.location.search);
       if (searchParams.has('event') && searchParams.has('version')) {
         let category = searchParams.get('event');
         let version = parseInt(searchParams.get('version'));
@@ -96,7 +97,7 @@
           alertMessage(message);
           return;
         }
-        location.href = "talent.html";
+        location.href = "talent.html?event=success";
       }
     }
 
@@ -106,6 +107,9 @@
     }
 
     async function refresh() {
+      if (searchParams.has('event') && searchParams.get('event') === "success") {
+        document.getElementById("success").classList.remove("visually-hidden");
+      }
       const { count: thanksCount, thanksError } = await client.from('thanks').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
       const { count: intercessionCount, intercessionError } = await client.from('intercession').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
       const { data: events, eventError } = await client.from('event').select('*').eq('user_id', session.user.id);
