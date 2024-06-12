@@ -65,7 +65,12 @@
       const authInfo = await client.auth.getSession();
       const session = authInfo.data.session;
       if (session !== null) {
-        location.href = "home.html";
+        let searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has('event') && searchParams.has('version')) {
+          location.href = "talent.html?" + searchParams.toString();
+        } else {
+          location.href = "home.html";
+        }
       }
     }
 

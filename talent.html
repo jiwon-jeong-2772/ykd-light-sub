@@ -48,13 +48,16 @@
     </div>
   </nav>
   <div class="container">
+    <div class="alert alert-danger visually-hidden" id="alert" role="alert"></div>
     <div class="row">
       <div class="col-3"></div>
       <div class="col-6 text-center pt-4">
         <h3>🌟 내 달란트: <span class="badge bg-warning" id="talent"></span></h3>
         <p class="m-3"> - 감사기도: <span class="badge bg-secondary" id="thanks-count"></span></p>
-        <p class="m-3"> - 중보기도: <span class="badge bg-secondary" id="intercession-count"></span>
-        </p>
+        <p class="m-3"> - 중보기도: <span class="badge bg-secondary" id="intercession-count"></span></p>
+        <p class="m-3"> - 주일예배: <span class="badge bg-secondary" id="sunday-worship-count"></span></p>
+        <p class="m-3"> - 목요예배: <span class="badge bg-secondary" id="thursday-worship-count"></span></p>
+        <p class="m-3"> - 마을모임: <span class="badge bg-secondary" id="town-meetup-count"></span></p>
       </div>
       <div class="col-3"></div>
     </div>
@@ -74,6 +77,29 @@
       refresh();
     }
 
+    async function checkEvent() {
+      let searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.has('event') && searchParams.has('version')) {
+        let category = searchParams.get('event');
+        let version = parseInt(searchParams.get('version'));
+        if (Number.isNaN(version)) {
+          let message = "잘못된 인증 정보로 인해 인증 결과 반영에 실패하였습니다.";
+          alertMessage(message);
+          return;
+        }
+        const { error } = await client.from('event').insert([{ category: category, version: version }]);
+        if (error !== null) {
+          let message = "처리 과정에서 문제가 발생하였습니다.";
+          if (error.message.startsWith("duplicate key")) {
+            message = "이미 인증이 완료된 항목입니다.";
+          }
+          alertMessage(message);
+          return;
+        }
+        location.href = "talent.html";
+      }
+    }
+
     async function signOut() {
       const { error } = await client.auth.signOut();
       location.href = "login.html";
@@ -82,15 +108,42 @@
     async function refresh() {
       const { count: thanksCount, thanksError } = await client.from('thanks').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
       const { count: intercessionCount, intercessionError } = await client.from('intercession').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
+      const { data: events, eventError } = await client.from('event').select('*').eq('user_id', session.user.id);
 
-      let talentTotal = thanksCount + intercessionCount;
+      let sundayWorshipCount = 0;
+      let thursdayWorshipCount = 0;
+      let townMeetupCount = 0;
+      for (let i = 0; i < events.length; i++) {
+        if (events[i].category === "sunday-worship") {
+          sundayWorshipCount++;
+        } else if (events[i].category === "thursday-worship") {
+          thursdayWorshipCount++;
+        } else if (events[i].category === "town-meetup") {
+          townMeetupCount++;
+        }
+      }
+      let sundayWorshipTalent = sundayWorshipCount * 3;
+      let thursdayWorshipTalent = thursdayWorshipCount * 3;
+      let townMeetupTalent = townMeetupCount * 3;
+      let talentTotal = thanksCount + intercessionCount
+        + sundayWorshipTalent + thursdayWorshipTalent + townMeetupTalent;
       document.querySelector("#talent").innerHTML = talentTotal;
       document.querySelector("#thanks-count").innerHTML = thanksCount;
       document.querySelector("#intercession-count").innerHTML = intercessionCount;
+      document.querySelector("#sunday-worship-count").innerHTML = sundayWorshipTalent
+      document.querySelector("#thursday-worship-count").innerHTML = thursdayWorshipTalent
+      document.querySelector("#town-meetup-count").innerHTML = townMeetupTalent;
+    }
+
+    function alertMessage(message) {
+      let alert = document.getElementById("alert");
+      alert.innerHTML = message;
+      alert.classList.remove("visually-hidden");
     }
 
     document.querySelector("#logout").addEventListener("click", signOut);
     checkLogin();
+    checkEvent();
   </script>
 
 </body>
