@@ -120,6 +120,7 @@
       let alert = document.getElementById("alert");
       alert.innerHTML = message;
       alert.classList.remove("visually-hidden");
+      window.scrollTo({ top: 0 });
     }
 
     function validate(email, password, passwordCheck, name, inception, leader) {
