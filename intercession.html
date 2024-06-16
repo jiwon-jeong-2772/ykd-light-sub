@@ -173,7 +173,12 @@
         }
         post.querySelector("span.interval").innerHTML = timeInterval;
         // author
-        let author = record[i].userinfo.inception + "기 " + record[i].userinfo.name
+        let inception = record[i].userinfo.inception;
+        let author = "";
+        if (inception < 10) {
+          author += "0";
+        }
+        author = author + inception + "기 " + record[i].userinfo.name
           + " (" + record[i].userinfo.leader + "셀)";
         post.querySelector("span.author").innerHTML = author;
         // delete
