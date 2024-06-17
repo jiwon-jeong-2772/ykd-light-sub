@@ -110,8 +110,8 @@
       if (searchParams.has('event') && searchParams.get('event') === "success") {
         document.getElementById("success").classList.remove("visually-hidden");
       }
-      const { count: thanksCount, thanksError } = await client.from('thanks').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
-      const { count: intercessionCount, intercessionError } = await client.from('intercession').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
+      const { count: thanksCount, thanksError } = await client.from('thanks_uniq').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
+      const { count: intercessionCount, intercessionError } = await client.from('intercession_uniq').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
       const { data: events, eventError } = await client.from('event').select('*').eq('user_id', session.user.id);
 
       let sundayWorshipCount = 0;
