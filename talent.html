@@ -40,6 +40,9 @@
             <a class="nav-link active" aria-current="page" href="intercession.html">중보기도🙏</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="freeboard.html">선넘사🧡</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
           </li>
         </ul>
@@ -50,15 +53,19 @@
   <div class="container">
     <div class="alert alert-danger visually-hidden" id="alert" role="alert"></div>
     <div class="alert alert-success visually-hidden" id="success" role="alert">인증에 성공하였습니다!</div>
+    <div class="alert alert-success visually-hidden" id="finished" role="alert">축하합니다!! 달란트 목표를 달성하셨습니다!🎉<br><br>나의
+      생전에 여호와를 찬양하며 나의 평생에 내 하나님을 찬송하리로다 [시편 146:2]</div>
     <div class="row">
       <div class="col-3"></div>
       <div class="col-6 text-center pt-4">
         <h3>🌟 내 달란트: <span class="badge bg-warning" id="talent"></span></h3>
+        <p class="m-3">(달성률: <mark id="total-ratio"></mark>)</p>
         <p class="m-3"> - 감사기도: <span class="badge bg-secondary" id="thanks-count"></span></p>
         <p class="m-3"> - 중보기도: <span class="badge bg-secondary" id="intercession-count"></span></p>
         <p class="m-3"> - 주일예배: <span class="badge bg-secondary" id="sunday-worship-count"></span></p>
         <p class="m-3"> - 목요예배: <span class="badge bg-secondary" id="thursday-worship-count"></span></p>
         <p class="m-3"> - 마을모임: <span class="badge bg-secondary" id="town-meetup-count"></span></p>
+        <p class="m-3"> - 선을 넘는 사랑: <span class="badge bg-secondary" id="freeboard-count"></span></p>
       </div>
       <div class="col-3"></div>
     </div>
@@ -113,6 +120,7 @@
       const { count: thanksCount, thanksError } = await client.from('thanks_uniq').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
       const { count: intercessionCount, intercessionError } = await client.from('intercession_uniq').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
       const { data: events, eventError } = await client.from('event').select('*').eq('user_id', session.user.id);
+      const { data: freeboardPosts, freeboardError } = await client.from('freeboard_uniq').select('*').eq('user_id', session.user.id);
 
       let sundayWorshipCount = 0;
       let thursdayWorshipCount = 0;
@@ -126,17 +134,36 @@
           townMeetupCount++;
         }
       }
+      // 선넘사 달란트 합산
+      let freeboardTalent = 0;
+      for (let i = 0; i < freeboardPosts.length; i++) {
+        let category = freeboardPosts[i].category;
+        if (category === "today-song" || category === "compliment") {
+          freeboardTalent++;
+        } else if (category === "kind-action") {
+          freeboardTalent += 2;
+        } else if (category === "friendship" || category === "meditation") {
+          freeboardTalent += 3;
+        }
+      }
       let sundayWorshipTalent = sundayWorshipCount * 3;
       let thursdayWorshipTalent = thursdayWorshipCount * 5;
       let townMeetupTalent = townMeetupCount * 1;
       let talentTotal = thanksCount + intercessionCount
-        + sundayWorshipTalent + thursdayWorshipTalent + townMeetupTalent;
+        + sundayWorshipTalent + thursdayWorshipTalent + townMeetupTalent + freeboardTalent;
+      let totalRatio = parseInt(talentTotal / 100 * 100);
       document.querySelector("#talent").innerHTML = talentTotal;
       document.querySelector("#thanks-count").innerHTML = thanksCount;
       document.querySelector("#intercession-count").innerHTML = intercessionCount;
       document.querySelector("#sunday-worship-count").innerHTML = sundayWorshipTalent
       document.querySelector("#thursday-worship-count").innerHTML = thursdayWorshipTalent
       document.querySelector("#town-meetup-count").innerHTML = townMeetupTalent;
+      document.querySelector("#freeboard-count").innerHTML = freeboardTalent;
+      document.querySelector("#total-ratio").innerHTML = totalRatio + "%";
+
+      if (talentTotal >= 100) {
+        document.getElementById("finished").classList.remove("visually-hidden");
+      }
     }
 
     function alertMessage(message) {

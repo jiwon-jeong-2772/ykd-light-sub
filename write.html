@@ -40,6 +40,9 @@
             <a class="nav-link active" aria-current="page" href="intercession.html">중보기도🙏</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="freeboard.html">선넘사🧡</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
           </li>
         </ul>
@@ -52,26 +55,37 @@
       <div class="alert alert-danger visually-hidden" id="alert" role="alert"></div>
       <div class="col-md-4">
         <label for="category" class="form-label">카테고리</label>
-        <select id="category" class="form-select">
-          <option selected>감사기도</option>
-          <option>중보기도</option>
+        <select id="category" class="form-select" onchange="changeCategory();">
+          <option value="thanks" selected>감사기도</option>
+          <option value="intercession">중보기도</option>
+          <option value="freeboard">선을 넘는 사랑</option>
         </select>
       </div>
+    </div>
+    <div class="col-md-4 mt-3 visually-hidden" id="sub-category-box">
+      <label for="sub-category" class="form-label">하위 카테고리</label>
+      <select id="sub-category" class="form-select" onchange="changeSubCategory();">
+        <option value="today-song" selected>오늘의 찬양 추천</option>
+        <option value="kind-action">하루의 선한 행동</option>
+        <option value="compliment">칭찬 파도타기</option>
+        <option value="friendship">하나님과 5분 데이트</option>
+        <option value="meditation">주일 설교 묵상 나눔</option>
+      </select>
     </div>
     <div class="row mt-4">
       <div class="col-12 mb-3">
         <label for="content" class="form-label">내용</label>
-        <textarea class="form-control" id="content" rows="5"></textarea>
+        <textarea class="form-control" id="content" rows="5" placeholder=""></textarea>
       </div>
     </div>
     <div class="row mt-3">
       <div class="col-9"></div>
       <div class="col-3">
         <div class="form-check">
-          <label class="form-check-label" for="private">
+          <label class="form-check-label" id="checkbox-label" for="private">
             비공개
           </label>
-          <input class="form-check-input form-check-input-reverse" type="checkbox" id="private">
+          <input class="form-check-input form-check-input-reverse" type="checkbox" id="checkbox">
         </div>
       </div>
     </div>
@@ -102,25 +116,56 @@
       location.href = "login.html";
     }
 
+    function changeCategory() {
+      let subCategoryBox = document.getElementById("sub-category-box");
+      let category = document.getElementById("category").value;
+      if (category.includes("free")) {
+        subCategoryBox.classList.remove("visually-hidden");
+        document.getElementById("checkbox-label").innerHTML = "익명";
+      } else {
+        subCategoryBox.classList.add("visually-hidden");
+        document.getElementById("checkbox-label").innerHTML = "비공개";
+        document.getElementById("content").setAttribute("placeholder", "");
+      }
+    }
+
+    function changeSubCategory() {
+      let subCategory = document.getElementById("sub-category").value;
+      let placeholderContent = "";
+      if (subCategory.includes("kind")) {
+        placeholderContent = "삶 속에서 실천한 선한 행동을 나눠주세요";
+      } else if (subCategory.includes("compliment")) {
+        placeholderContent = "칭찬하고 싶거나 격려하고 싶은 공동체원에게 진심을 담아 글을 써주세요";
+      } else if (subCategory.includes("friendship")) {
+        placeholderContent = "하루 중 시간을 내어 5분 동안 하나님과 친밀한 시간을 가져보고 느낀점을 나눠주세요";
+      }
+      document.getElementById("content").setAttribute("placeholder", placeholderContent);
+    }
+
     async function createPost() {
       let category = document.getElementById("category").value;
       let content = document.getElementById("content").value;
-      let isPrivate = document.getElementById("private").checked;
+      let isChecked = document.getElementById("checkbox").checked;
       let { isValid, message } = validate(content);
       if (!isValid) {
         alertMessage(message);
         return;
       }
-      let tableName = "thanks";
-      if (category.includes("중보기도")) {
-        tableName = "intercession";
-      }
-      const { error } = await client.from(tableName).insert([{ body: content, is_private: isPrivate }]);
+      const { error } = await insertData(category, content, isChecked);
       if (error !== null) {
         let message = "처리 과정에서 문제가 발생하였습니다.";
         alertMessage(message);
       }
-      location.href = tableName + ".html";
+      location.href = category + ".html";
+    }
+
+    async function insertData(tableName, content, isChecked) {
+      if (tableName.includes("free")) {
+        let subCategory = document.getElementById("sub-category").value;
+        return await client.from(tableName).insert([{ body: content, category: subCategory, is_anonymous: isChecked }]);
+      } else {
+        return await client.from(tableName).insert([{ body: content, is_private: isChecked }]);
+      }
     }
 
     function validate(content) {
