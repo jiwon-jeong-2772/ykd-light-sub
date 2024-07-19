@@ -84,6 +84,26 @@
       </div>
     </div>
     <div class="row col-sm-12 col-12 justify-content-center">
+      <div class="card col-sm-5 col-5 m-1">
+        <div class="card-body">
+          <h5 class="card-title">목요예배⛪️</h5>
+          <p class="card-text">목요예배 참석</p>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#thrusday-worship-modal">
+            인증하기
+          </button>
+        </div>
+      </div>
+      <div class="card col-sm-5 col-5 m-1">
+        <div class="card-body">
+          <h5 class="card-title">주일예배⛪️</h5>
+          <p class="card-text">주일예배 5분전</p>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sunday-worship-modal">
+            인증하기
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="row col-sm-12 col-12 justify-content-center">
       <div class="card col-sm-10 col-10 m-1">
         <div class="card-body text-center">
           <h5 class="card-title">달란트🌟</h5>
@@ -99,6 +119,41 @@
       </div>
       <div class="col-sm-8 col-10 text-center">
         <img src="images/main_logo.png" class="rounded img-fluid" alt="...">
+      </div>
+    </div>
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="thrusday-worship-modal" tabindex="-1" aria-labelledby="thursday-worship-modal-title"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="thursday-worship-modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          목요예배 시즌2가 종료되었습니다!<br>참여해주셔서 감사합니다😃
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="sunday-worship-modal" tabindex="-1" aria-labelledby="sunday-worship-modal-title"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="sunday-worship-modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <img src="images/sunday_worship_guide.png" class="rounded img-fluid" alt="...">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
