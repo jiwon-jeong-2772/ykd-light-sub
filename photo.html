@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./css/timeline.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="home.html">YKD light</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" href="home.html">Home🏠</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="write.html">글쓰기✏️</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="thanks.html">감사기도📝</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="intercession.html">중보기도🙏</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="freeboard.html">선넘사🧡</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="talent.html" tabindex="-1">달란트🌟</a>
+          </li>
+        </ul>
+        <button class="btn btn-outline-success" id="logout" type="submit">Logout</button>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="m-3">
+      <label for="upload-photo" class="form-label">업로드할 사진을 선택해주세요.</label>
+      <input class="form-control" type="file" id="upload-photo" accept="image/*" onchange="uploadPhoto(this)">
+    </div>
+  </div>
+  <div class="container" id="list"></div>
+  <div class="container invisible">
+    <div class="row justify-content-center align-items-center" id="post-template">
+      <div class="col-md-10 col-sm-10 col-11">
+        <div class="media g-mb-30 media-comment">
+          <div class="media-body u-shadow-v18 g-bg-secondary g-pa-30">
+            <img src="" alt="...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const supabaseUrl = "https://xyhsopvwaqkpovwrjuwo.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5aHNvcHZ3YXFrcG92d3JqdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4MDA0MTgsImV4cCI6MjAzMjM3NjQxOH0.EujPowKW1Ux0pqfbavxo7iboWVcsstQU4VIpp9geixw";
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
+    let session = null;
+
+    async function checkLogin() {
+      const authInfo = await client.auth.getSession();
+      session = authInfo.data.session;
+      if (session === null) {
+        location.href = "login.html";
+      }
+    }
+
+    async function signOut() {
+      const { error } = await client.auth.signOut();
+      location.href = "login.html";
+    }
+
+    async function uploadPhoto(photo) {
+      let file = photo.files[0];
+
+      let fileId = session.user.id + "_" + Date.now();
+      console.log(fileId);
+      const { data, error } = await client.storage.from("photo").upload("test/" + fileId, file);
+      showAllPhotos();
+    }
+
+    async function showAllPhotos() {
+      const { data, error } = await client.storage.from("photo").list("test/", {
+        limit: 10,
+        offset: 0,
+        sortBy: {
+          column: 'name', order: 'asc'
+        }
+      });
+      for (let i = 0; i < data.length; i++) {
+        let fileName = data[i].name;
+        if (fileName.startsWith(".emptyFolder")) {
+          continue;
+        }
+        let post = document.getElementById("post-template").cloneNode(true);
+        post.removeAttribute('id');
+        post.querySelector("img").setAttribute("src", "https://xyhsopvwaqkpovwrjuwo.supabase.co/storage/v1/object/public/photos/test/" + fileName);
+        document.getElementById("list").appendChild(post);
+      }
+    }
+
+    document.querySelector("#logout").addEventListener("click", signOut);
+    checkLogin();
+    showAllPhotos();
+  </script>
+
+</body>
+
+</html>

@@ -30,9 +30,9 @@
           <li class="nav-item">
             <a class="nav-link active" href="home.html">Home🏠</a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link active" href="write.html">글쓰기✏️</a>
-          </li>
+          </li> -->
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="thanks.html">감사기도📝</a>
           </li>
@@ -56,7 +56,9 @@
         <div class="card-body">
           <h5 class="card-title">글쓰기✏️</h5>
           <p class="card-text">게시글 작성</p>
-          <a href="write.html" class="btn btn-primary">이동하기</a>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#write-modal">
+            이동하기
+          </button>
         </div>
       </div>
       <div class="card col-sm-5 col-5 m-1">
@@ -150,6 +152,23 @@
         </div>
         <div class="modal-body">
           <img src="images/sunday_worship_guide.png" class="rounded img-fluid" alt="...">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="write-modal" tabindex="-1" aria-labelledby="write-modal-title"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="write-modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          빛마을 여름방학 달란트 미션이 종료되었습니다!<br>긴 시간 함께해 주시고<br>귀한 나눔 해주셔서 감사합니다🩵
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
